@@ -15,6 +15,9 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
+window.addEventListener('resize', () => resizeWindow());
+window.addEventListener('scroll', () => resizeWindow());
+
 var objs = [];
 var objMinSize = 0.4;
 var objMaxSize = 0.5;
@@ -165,6 +168,14 @@ function createMaterial() {
 
 function generateRandomFloatInRange(min, max) {
     return (Math.random() * (max - min) + min);
+}
+
+function resizeWindow(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
 }
 
 function animate3D(time) {

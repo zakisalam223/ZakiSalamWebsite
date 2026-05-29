@@ -19,12 +19,25 @@ export class Creature {
         this.lastTargetTime = 0;
 
 
+        this.normX = (x - boundingBox.left) / boundingBox.width;
+        this.normY = (y - boundingBox.top) / boundingBox.height;
+
+
         const d = 100;
         for (var i = 0; i < this.numberOfSegments; i++) {
             const r = segmentSizes[i];
             const prevR = i > 0 ? segmentSizes[i - 1] : r;
             const spacing = (r + prevR);
             this.body.push(new Segment(x - (i * spacing), y, 0, r, d / 20, this.color));
+        }
+    }
+
+    reproject(oldBox, newBox) {
+        for (const seg of this.body) {
+            const nx = (seg.x - oldBox.left) / oldBox.width;
+            const ny = (seg.y - oldBox.top) / oldBox.height;
+            seg.x = newBox.left + nx * newBox.width;
+            seg.y = newBox.top + ny * newBox.height;
         }
     }
 
@@ -65,6 +78,23 @@ export class Creature {
     }
 
     update(time, mouse, boundingBox) {
+
+        if (this.boundingBox &&
+            (this.boundingBox.width !== boundingBox.width ||
+                this.boundingBox.height !== boundingBox.height ||
+                this.boundingBox.left !== boundingBox.left ||
+                this.boundingBox.top !== boundingBox.top)) {
+            this.reproject(this.boundingBox, boundingBox);
+
+            const nx = (this.target.x - this.boundingBox.left) / this.boundingBox.width;
+            const ny = (this.target.y - this.boundingBox.top) / this.boundingBox.height;
+            this.target.x = boundingBox.left + nx * boundingBox.width;
+            this.target.y = boundingBox.top + ny * boundingBox.height;
+        }
+
+        // updating bounding box for if window is resized etc.
+        this.boundingBox = boundingBox;
+
         const head = this.body[0];
         const speed = 0.7;
         const speedFollowing = 2;
@@ -76,9 +106,6 @@ export class Creature {
             const prevSeg = this.body[i - 1];
             currentSeg.update(prevSeg);
         }
-
-        // updating bounding box for if window is resized etc.
-        this.boundingBox = boundingBox;
 
         if (mouse.x >= this.boundingBox.left &&
             mouse.x <= this.boundingBox.left + this.boundingBox.width &&
